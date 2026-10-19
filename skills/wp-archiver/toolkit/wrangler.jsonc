@@ -1,0 +1,25 @@
+// Cloudflare Workers config: serve site/ as static assets, no Worker code.
+// The site owner runs the deploy from this folder (the agent never does):  npx wrangler deploy
+// Dry run first: npx wrangler deploy --dry-run.   Verify option names against the current docs before editing (PUB-1):
+// https://developers.cloudflare.com/workers/static-assets/ and https://developers.cloudflare.com/workers/wrangler/configuration/
+{
+  "name": "example-site",
+  // Set to the date you deploy; it pins the Workers runtime behaviour.
+  "compatibility_date": "2026-01-01",
+
+  // Attach the custom domain on deploy. The domain's zone must be in the same Cloudflare account, and the hostname
+  // must not already have an A/CNAME record (PUB-2).
+  "routes": [
+    { "pattern": "archive.example.site", "custom_domain": true }
+  ],
+  // Keep the *.workers.dev URL too, handy for checking the deploy before relying on DNS. Set false to remove it (PUB-4).
+  "workers_dev": true,
+
+  "assets": {
+    "directory": "./site",
+    // /about/ -> about/index.html (the export uses folder/index.html everywhere)
+    "html_handling": "auto-trailing-slash",
+    // unknown paths get site/404.html with a real 404 status
+    "not_found_handling": "404-page"
+  }
+}

@@ -1,0 +1,33 @@
+# Everything runs in Linux containers or is served from Cloudflare: LF in the repo AND the working tree (ENV-3).
+# Set `git config core.autocrlf false` in the site repo; these attributes are the single source of truth for line endings.
+* text=auto eol=lf
+# Shell scripts and container files run inside Linux containers: always LF.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.ini text eol=lf
+*.yml text eol=lf
+# Windows-native scripts need CRLF (the toolkit ships none).
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+# Binaries: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+# The scrubbed DB seed: one INSERT per line, LF, and never shown as a diff in tools that support it.
+db/seed.sql text eol=lf -diff linguist-generated
+# The raw media mirror (phase 08) goes through Git LFS. Delete this line if you publish it as a release asset instead (IMG-5).
+raw/*.zip filter=lfs diff=lfs merge=lfs -text
+
+# The static export is deployed byte-for-byte: never normalise line endings or diff its contents.
+site/** -text -diff

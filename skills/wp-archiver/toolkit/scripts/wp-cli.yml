@@ -1,0 +1,3 @@
+# Picked up by WP-CLI because the wpcli service's working_dir is /scripts, so ad-hoc commands
+# (docker compose run --rm wpcli wp plugin list) need no extra flags.
+path: /var/www/html

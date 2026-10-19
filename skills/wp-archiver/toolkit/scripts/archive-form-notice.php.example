@@ -1,0 +1,92 @@
+<?php
+/**
+ * EXAMPLE / TEMPLATE -- site-specific by nature. Copy to archive-form-notice.php, fill in the constants, and run:
+ *
+ *   docker compose --profile tools run --rm wpcli wp eval-file archive-form-notice.php
+ *
+ * Replaces a dead form (its plugin is about to be removed) with a deliberate "this site is an archive" notice on the
+ * pages that carry it, instead of leaving a literal shortcode or a blank widget (PRN-1). Idempotent. Edits the LIVE
+ * pages only: old revisions still mention the form and go in the DB scrub (phase 06).
+ *
+ * Written for Elementor-built pages (the form is a widget in `_elementor_data`, or a shortcode pasted into a text
+ * widget). For classic/block content only the shortcode-swap block at the bottom applies. Inspect first: dump the
+ * widget tree of each page (json_decode(get_post_meta($id, '_elementor_data', true))) to find the real widget types.
+ * Wording is the site owner's call. Afterwards: remove the form plugin, flush the builder's CSS cache, re-run check.sh.
+ */
+
+// PER-SITE ---------------------------------------------------------------------------------------------------
+const PAGES = [123 => 'contact', 456 => 'home'];                 // post ID => kind, from `wp post list`
+const FORM_WIDGET = 'wp-widget-example-form-widget';             // the plugin's Elementor widgetType
+const FORM_SHORTCODE = '/\[example-form[^\]]*\]/i';              // regex for the pasted shortcode
+const NOTICE_HEADING = 'This site is an archive';
+const NOTICE_CONTACT = 'The contact form is no longer active, so messages can&#8217;t be sent from this page.';
+const NOTICE_HOME    = 'This site is now an archive and the contact form is no longer active.';
+const OLD_HEADING    = 'Send a Message';                          // heading above the form on the contact page, if any
+// A notice on a dark background needs readable styling; adjust or empty this array.
+const HOME_STYLE = [
+    'text_color' => '#ffffff',
+    'typography_typography' => 'custom',
+    'typography_font_size' => ['unit' => 'px', 'size' => 20, 'sizes' => []],
+    'typography_font_weight' => '600',
+    '_padding' => ['unit' => 'px', 'top' => '40', 'right' => '10', 'bottom' => '40', 'left' => '10', 'isLinked' => false],
+];
+// ------------------------------------------------------------------------------------------------------------
+
+function replace_form($els, $notice, &$changed) {
+    foreach ($els as $i => $el) {
+        $is_form = ($el['widgetType'] ?? '') === FORM_WIDGET;
+        $is_notice = ($el['widgetType'] ?? '') === 'text-editor' && strpos($el['settings']['editor'] ?? '', $notice) !== false;
+        if ($is_form || $is_notice) {
+            // Same id, different widget: Elementor styles by id, so the layout slot is preserved.
+            $settings = array_merge(
+                array_diff_key($el['settings'] ?? [], ['wp' => 1]),
+                ['editor' => '<p>' . $notice . '</p>'],
+                HOME_STYLE
+            );
+            if ($is_form || $settings != ($el['settings'] ?? [])) {
+                $els[$i] = ['id' => $el['id'], 'elType' => 'widget', 'widgetType' => 'text-editor',
+                            'settings' => $settings, 'elements' => []];
+                $changed++;
+            }
+        } elseif (!empty($el['elements'])) {
+            $els[$i]['elements'] = replace_form($el['elements'], $notice, $changed);
+        }
+    }
+    return $els;
+}
+
+function contact_page($els, &$changed) {
+    foreach ($els as $i => $el) {
+        $s = $el['settings'] ?? [];
+        if (($el['widgetType'] ?? '') === 'heading' && ($s['title'] ?? '') === OLD_HEADING) {
+            $els[$i]['settings']['title'] = NOTICE_HEADING;
+            $changed++;
+        } elseif (($el['widgetType'] ?? '') === 'text-editor' && preg_match(FORM_SHORTCODE, $s['editor'] ?? '')) {
+            $els[$i]['settings']['editor'] = '<p>' . NOTICE_CONTACT . '</p>';
+            $changed++;
+        } elseif (!empty($el['elements'])) {
+            $els[$i]['elements'] = contact_page($el['elements'], $changed);
+        }
+    }
+    return $els;
+}
+
+foreach (PAGES as $id => $kind) {
+    $raw = get_post_meta($id, '_elementor_data', true);
+    $changed = 0;
+    if ($raw) {
+        $data = json_decode($raw, true);
+        $data = $kind === 'contact' ? contact_page($data, $changed) : replace_form($data, NOTICE_HOME, $changed);
+        if ($changed) {
+            update_post_meta($id, '_elementor_data', wp_slash(wp_json_encode($data)));
+        }
+    }
+    // Plain-content fallback (search/excerpts, non-Elementor pages): swap any leftover shortcode for the notice text.
+    $content = get_post_field('post_content', $id);
+    $new = preg_replace(FORM_SHORTCODE, $kind === 'contact' ? NOTICE_CONTACT : NOTICE_HOME, $content);
+    if ($new !== $content) {
+        wp_update_post(['ID' => $id, 'post_content' => wp_slash($new)]);
+        $changed++;
+    }
+    echo "post $id ($kind): $changed change(s)\n";
+}

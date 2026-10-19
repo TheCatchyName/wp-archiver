@@ -1,0 +1,6 @@
+# Assets that JavaScript requests at runtime and no HTML/CSS parser can see. One root-relative path per line.
+# Found via the static server's 404 log (phase 07): serve site/ with scripts/serve-site.py, browse it, then
+#   sort -u .data/export/404.log
+# and paste every missing path here, re-export, repeat until the log is empty (EXP-1).
+# Page builders lazy-load JS chunks. For Elementor sites start from builders/elementor/export-extra-urls.txt
+# (shipped with the skill): copy its lines below.

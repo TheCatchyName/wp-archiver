@@ -1,0 +1,31 @@
+# Local secrets / dev credentials
+.env
+
+# Docker state: database files and the WordPress tree (core + plugins + themes).
+# Disposable -- rebuilt from db/seed.sql; never the source of truth. Also holds unscrubbed backups and snapshots.
+.data/
+
+# The raw hosting download: contains wp-config.php (DB credentials, salts), private keys, vendor licence keys,
+# visitor IP logs, backup zips. Never tracked; store it privately elsewhere (phase 10).
+archive/
+
+# db/seed.sql is the raw, UNSCRUBBED dump until phase 06 replaces it (user hashes, visitor IPs).
+# Phase 06: after the seed has been scrubbed and audited, delete the next line so the seed is tracked.
+db/seed.sql
+
+# Everything under wp/ stays untracked: git ships the static export (site/), not the WordPress source.
+# wp/uploads (the media library) is mirrored by raw/ (phase 08) and backed up privately.
+wp/*
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
+
+# Python venv for scripts/ (pip install -r requirements.txt)
+.venv/
+__pycache__/
+
+# wrangler scratch (created by dry runs)
+.wrangler/

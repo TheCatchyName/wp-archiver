@@ -1,0 +1,92 @@
+# Local editing environment for the site being archived. Everything it needs comes from .env (see .env.example):
+# MySQL (the old host's major version: a dump with utf8mb4_0900_ai_ci cannot be loaded by MariaDB) + WordPress
+# pinned to the old host's WP/PHP versions. Everything stateful lives in gitignored folders next to this file:
+#   .data/mysql  database files   (disposable -- rebuilt from db/seed.sql on first start)
+#   .data/html   WordPress core + plugins + themes (disposable)
+#   wp/uploads   media library    (the one non-disposable piece; back it up)
+# The compose project name comes from COMPOSE_PROJECT_NAME in .env.
+
+services:
+  db:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    container_name: ${COMPOSE_PROJECT_NAME:?copy .env.example to .env first}-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:?copy .env.example to .env first}
+      MYSQL_USER: ${DB_USER:?copy .env.example to .env first}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?copy .env.example to .env first}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?copy .env.example to .env first}
+    command: ["--character-set-server=utf8mb4"]
+    volumes:
+      - ./.data/mysql:/var/lib/mysql
+      # Every *.sql in db/ is imported once, on first init of an empty .data/mysql.
+      - ./db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  wordpress:
+    build:
+      context: ./docker/wordpress
+      args:
+        WP_VERSION: ${WP_VERSION:?copy .env.example to .env first}
+        PHP_VERSION: ${PHP_VERSION:?copy .env.example to .env first}
+    container_name: ${COMPOSE_PROJECT_NAME}-wp
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment: &wp-env
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: ${DB_NAME}
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      # Must match the prefix inside db/seed.sql.
+      WORDPRESS_TABLE_PREFIX: ${TABLE_PREFIX:?copy .env.example to .env first}
+      # The URL is pinned in config (not just in the DB) so the site always answers on http://localhost
+      # (port 80) -- inside the container too, for any plugin that crawls its own URL over loopback.
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', 'http://localhost');
+        define('WP_SITEURL', 'http://localhost');
+        define('WP_ENVIRONMENT_TYPE', 'local');
+        define('DISABLE_WP_CRON', true);
+        define('AUTOMATIC_UPDATER_DISABLED', true);
+        define('DISALLOW_FILE_EDIT', true);
+        define('WP_POST_REVISIONS', false);   // keep the DB (and the seed) from re-bloating: no revisions...
+        define('EMPTY_TRASH_DAYS', 0);        // ...and trashing deletes immediately
+        define('AUTOSAVE_INTERVAL', 86400);
+        define('WP_HTTP_BLOCK_EXTERNAL', true);
+        define('WP_ACCESSIBLE_HOSTS', 'localhost');
+    # Loopback only: the admin is never exposed to the LAN. Port 80 on purpose (ENV-1).
+    ports:
+      - "127.0.0.1:80:80"
+    volumes:
+      - ./.data/html:/var/www/html
+      - ./wp/uploads:/var/www/html/wp-content/uploads
+
+  # One-shot WP-CLI: docker compose --profile tools run --rm wpcli wp <args>  (the profile keeps it out of `up`)
+  wpcli:
+    image: wordpress:cli
+    profiles: ["tools"]
+    # 33 = www-data in the apache image, so WP-CLI never needs --allow-root (a yml setting is ignored).
+    user: "33:33"
+    # Scripts run as `sh setup.sh` from here -- no leading-slash path for Git Bash to mangle (ENV-2).
+    working_dir: /scripts
+    depends_on:
+      - wordpress
+    environment:
+      <<: *wp-env
+      HOME: /tmp
+      WP_CLI_PHP_ARGS: "-d memory_limit=1024M"
+      OLD_HOSTS: ${OLD_HOSTS:-}
+      BUILDER: ${BUILDER:-none}
+      WP_ADMIN_USER: ${WP_ADMIN_USER:-localadmin}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL:-localadmin@example.test}
+      WP_ADMIN_PASSWORD: ${WP_ADMIN_PASSWORD:?copy .env.example to .env first}
+    volumes:
+      - ./.data/html:/var/www/html
+      - ./wp/uploads:/var/www/html/wp-content/uploads
+      - ./scripts:/scripts:ro

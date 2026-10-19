@@ -1,0 +1,8 @@
+# Plugins and theme that survive the prune (phase 05), proven by pixel-identical renders.
+# Format: <type> <wordpress.org slug> <version>. Documentation only: nothing consumes it yet, the working tree under
+# .data/html holds the actual files. To make the stack rebuildable from a clean tree, install from this with WP-CLI:
+#   wp plugin install <slug> --version=<version> --activate
+# Replace the examples below with the real survivors.
+theme   twentytwentyfive         1.0
+plugin  example-page-builder     1.2.3
+plugin  example-tables           3.4.5     # kept: a visible feature of the site
