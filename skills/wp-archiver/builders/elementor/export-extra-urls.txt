@@ -1,0 +1,25 @@
+# Assets that JavaScript requests at runtime and no HTML/CSS parser can see (found via the static server's 404 log).
+# Elementor lazy-loads these webpack chunks; include them all so interactions (lightbox, tabs, ...) work too.
+/wp-content/plugins/elementor/assets/js/chunks/accordion.min.js
+/wp-content/plugins/elementor/assets/js/chunks/alert.min.js
+/wp-content/plugins/elementor/assets/js/chunks/background-slideshow.min.js
+/wp-content/plugins/elementor/assets/js/chunks/background-video.min.js
+/wp-content/plugins/elementor/assets/js/chunks/contact-buttons.min.js
+/wp-content/plugins/elementor/assets/js/chunks/container-grid-container.min.js
+/wp-content/plugins/elementor/assets/js/chunks/container-shapes.min.js
+/wp-content/plugins/elementor/assets/js/chunks/counter.min.js
+/wp-content/plugins/elementor/assets/js/chunks/floating-bars.min.js
+/wp-content/plugins/elementor/assets/js/chunks/handles-position.min.js
+/wp-content/plugins/elementor/assets/js/chunks/image-carousel.min.js
+/wp-content/plugins/elementor/assets/js/chunks/lightbox-lightbox.min.js
+/wp-content/plugins/elementor/assets/js/chunks/nested-accordion.min.js
+/wp-content/plugins/elementor/assets/js/chunks/nested-tabs.min.js
+/wp-content/plugins/elementor/assets/js/chunks/progress.min.js
+/wp-content/plugins/elementor/assets/js/chunks/section-shapes.min.js
+/wp-content/plugins/elementor/assets/js/chunks/section-stretched-section.min.js
+/wp-content/plugins/elementor/assets/js/chunks/tabs.min.js
+/wp-content/plugins/elementor/assets/js/chunks/text-editor.min.js
+/wp-content/plugins/elementor/assets/js/chunks/text-path.min.js
+/wp-content/plugins/elementor/assets/js/chunks/toggle.min.js
+/wp-content/plugins/elementor/assets/js/chunks/video.min.js
+/wp-content/plugins/elementor/assets/js/chunks/wp-audio.min.js
