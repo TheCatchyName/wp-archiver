@@ -30,7 +30,7 @@ example.site (old host)                                          archive.example
 As a Claude Code plugin (replace `<owner>` with the GitHub account hosting this repo):
 
 ```
-/plugin marketplace add <owner>/wp-archiver
+/plugin marketplace add TheCatchyName/wp-archiver
 /plugin install wp-archiver@wp-archiver
 ```
 
