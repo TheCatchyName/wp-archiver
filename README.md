@@ -58,7 +58,7 @@ Docker (Desktop or Engine) · a POSIX shell (Git Bash on Windows) · Python 3.11
 
 ## Status and limits
 
-- **Proven on one site**: a 17-page Elementor site, Windows 10 + Docker Desktop + Git Bash. The generalised toolkit was re-run against that same site and reproduced its output; it has not yet been used on a second, different site (what is and isn't verified: [`AI-DISCLOSURE.md`](AI-DISCLOSURE.md)).
+- **Proven on one site**: a 17-page Elementor site, Windows 10 + Docker Desktop + Git Bash. The generalised toolkit was re-run against that same site and reproduced its output; it has since archived and deployed a second, different site (Divi) end to end, with six gaps found and fixed along the way (what is and isn't verified: [`AI-DISCLOSURE.md`](AI-DISCLOSURE.md)).
 - **Not for sites visitors change** — WooCommerce, memberships, LMS, bookings. Recon rejects them.
 - Page builders other than Elementor, and macOS/Linux hosts, are untested. The seams are documented; see [`docs/ROADMAP.md`](docs/ROADMAP.md).
 - Static output only: forms, search and comments become notices or third-party embeds, by your decision.

@@ -1,6 +1,8 @@
-# Builder adapter: Divi (proven once through phase 08: Divi 4.20.2, WordPress 7.1.3, a 4-URL site)
+# Builder adapter: Divi (proven once, end to end and deployed: Divi 4.20.2, WordPress 7.1.3, a 4-URL site)
 
 Set `BUILDER=divi` in `.env`. Written *during* the first Divi site; each line is tagged **observed** (seen and verified there) or **open** (not yet confirmed). Divi 5 and larger Divi sites are untested.
+
+**Automatic now:** `builders/apply.sh divi <site-repo>` installs the files below; `export.py` rewrites protocol-relative URLs and crawls the 404 page's assets; `check-site.py` flags leaks and honours the directory list; `scrub.sql` deletes Divi's cache option and the Elegant Themes licence credentials (no-ops on other sites); `visual.py` captures at a visitor viewport. **Still a decision per site:** the contact-form wording, which `_et_*` meta to drop, anything the **open** items below cover.
 
 Files here: [`check-site-dir-only.txt`](check-site-dir-only.txt) (copy to `scripts/`), [`divi-form-notice.php.example`](divi-form-notice.php.example) (copy to `scripts/`).
 

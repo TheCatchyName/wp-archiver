@@ -48,7 +48,15 @@ DELETE FROM {P}options WHERE option_name LIKE '\_transient\_%' OR option_name LI
 DELETE FROM {P}options WHERE option_name IN ('cron', 'recently_activated', 'recovery_keys', 'admin_email_lifespan',
   -- builder: Elementor caches/logs (a no-op on other sites)
   'elementor_log', 'elementor_remote_info_library', 'elementor_controls_usage', '_elementor_assets_data',
-  '_elementor_global_css', '_elementor_element_cache_unique_id');
+  '_elementor_global_css', '_elementor_element_cache_unique_id',
+  -- builder: Divi cache (regenerated on render; holds no settings; a no-op on other sites)
+  '_et_builder_da_feature_cache',
+  -- builder: Divi licence credentials and support-site ids: `et_automatic_updates_options` holds the owner's Elegant
+  -- Themes username + API key. A secret: never let it reach the seed (DB-4). A no-op on other sites.
+  'et_automatic_updates_options', 'et_support_site_id', 'et-support-center-safe-mode-verify', 'et_account_status');
+DELETE FROM {P}usermeta WHERE meta_key LIKE '\_et\_support\_center%';   -- builder: Divi (a no-op elsewhere)
+-- NOT deleted, builder: Divi -- options `et_divi`, `et_pb_*` (incl. per-form `et_pb_contact_form_*`), `et_google_api_settings` and
+-- post meta `_et_pb_*`, `_et_builder_*`, `_global_colors_info`: settings or registries the render may depend on (DB-2).
 -- NOT deleted, builder: Elementor -- `_elementor_local_google_fonts`. It is the registry of self-hosted fonts, not a
 -- cache; without it Elementor falls back to Google's CDN (and cannot re-download: outbound HTTP is blocked). DB-2.
 

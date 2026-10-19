@@ -10,6 +10,7 @@ before reuse; the full list is [`site-config.md`](site-config.md). Gotcha IDs po
 |---|---|---|---|---|---|
 | setup | `requirements.txt` | `python -m venv .venv`, then `<venv python> -m pip install -r requirements.txt` | → `.venv/` (Pillow only) | no | ENV-3 |
 | baseline | `_cdp.py` | (imported by `visual.py`) | minimal DevTools-protocol client: full-page screenshot at a normal viewport | no | VIS-8 |
+| setup | `builders/apply.sh` (in the skill, not the toolkit) | `bash <skill>/builders/apply.sh <builder> .` | adapter assets -> `scripts/` (extra URLs, dir-only list, notice example) | **yes** (`BUILDER`) | EXP-1 |
 | all | `_env.py` | (imported by the Python scripts) | `.env` → `ROOT`, `env()`, `require()` | no | — |
 | capture/retire | `survey-sizes.py` | `python scripts/survey-sizes.py <dir> [depth] [top]` | largest folders under a directory | no | ARC-1, ENV-12 |
 | restore | `seed-from-archive.sh` | `bash scripts/seed-from-archive.sh` | `archive/<host>/` → `db/seed.sql`, `.data/html/wp-content` (all plugins + active theme), `wp/uploads` | `.env`: `ACTIVE_THEME`, `UPLOADS_SKIP`, `DUMP_FILE` | RST-4, ARC-4 |

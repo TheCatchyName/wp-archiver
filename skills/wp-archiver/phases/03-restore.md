@@ -3,6 +3,7 @@
 **Goal** the original site running at `http://localhost`, reachable by WP-CLI, with a local admin. **Needs** phase 02 download, phase 00 repo. **Produces** `.data/` (MySQL + WP tree), `wp/uploads/`, `db/seed.sql` (raw, still gitignored). **Gotchas** ENV-1, ENV-2, ENV-6, ENV-7, ENV-8, RST-3..7, RST-9.
 
 ## Steps
+0. If not done in phase 00: `bash <skill>/builders/apply.sh <BUILDER> .` (see [`../builders/README.md`](../builders/README.md)).
 1. **Fill `.env`** from what you learned in phases 01–02: `WP_VERSION`, `PHP_VERSION`, `MYSQL_VERSION`, `TABLE_PREFIX`, `OLD_HOSTS` (every host baked into content: temp domains, `www.` variants, the dead original), `ACTIVE_THEME`, `BUILDER`. Check old hosts with `grep -oE 'https?://[^/"\\ ]+' <dump> | sort | uniq -c | sort -rn | head -30`.
 2. `bash scripts/seed-from-archive.sh` — copies the dump to `db/seed.sql`, **all** plugins + the active theme + dated media into `.data/html/wp-content` and `wp/uploads` (skipping caches, backup-plugin folders and old-host drop-ins). Survey `uploads/` first with `python scripts/survey-sizes.py archive/<host>/public_html/wp-content/uploads` and extend `UPLOADS_SKIP` in `.env` for anything big and regenerable (ARC-1). The baseline must reproduce the live site, so *all* plugins come along; pruning is phase 05.
 3. `docker compose up -d --build` — MySQL (same major as the host) imports `db/seed.sql` on first start of an empty `.data/mysql` (≈40 s for a 29 MB dump); WordPress is pinned to the live WP/PHP versions on `127.0.0.1:80`; outbound HTTP blocked; revisions off.

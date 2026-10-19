@@ -13,7 +13,8 @@
    Fill in the `<…>` placeholders in `CLAUDE.md` and `docs/STATUS.md`. Do **not** create `site/ raw/ db/ overlay/ wp/ .data/ archive/` by hand; scripts make them.
 3. **Venv:** `python -m venv .venv`, then `.venv/bin/python -m pip install -r requirements.txt` (Windows: `.venv/Scripts/python`). It needs only Pillow. If using LFS: `git lfs install --local`.
 4. **`.env`:** `cp .env.example .env`. Generate the three passwords yourself (`python -c "import secrets; print(secrets.token_urlsafe(18))"`); they are local-only. Leave the source-site facts (versions, prefix, old hosts, theme) for phases 01–03; `COMPOSE_PROJECT_NAME` and `FINAL_URL` can be set now. [`../reference/site-config.md`](../reference/site-config.md) lists every value and where to find it.
-5. **Check the machine:** `docker compose version`; on Windows `netsh interface ipv4 show excludedportrange protocol=tcp` (the stack publishes **port 80**; ENV-1); free disk on the drive that will hold `.data/` (ENV-9).
+5. **Builder assets** (once `BUILDER` is known, usually after recon): `bash <skill>/builders/apply.sh <builder> .` installs the adapter's extra-URL list, directory-only reference list and form-notice example into `scripts/` (idempotent). No adapter needed for a plain theme.
+6. **Check the machine:** `docker compose version`; on Windows `netsh interface ipv4 show excludedportrange protocol=tcp` (the stack publishes **port 80**; ENV-1); free disk on the drive that will hold `.data/` (ENV-9).
 
 ## Exit criteria
 `docker compose config -q` passes (never print the resolved config: ENV-5); `git ls-files --eol` shows only `i/lf w/lf` once files are staged; the venv imports Pillow (`python -c "import PIL"`); `docs/STATUS.md` exists.

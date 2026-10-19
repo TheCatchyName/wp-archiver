@@ -5,7 +5,7 @@ The toolkit is builder-neutral on purpose; everything that depends on how a page
 | Builder | Status | Adapter |
 |---|---|---|
 | Elementor | proven on one site | [`elementor/`](elementor/README.md) |
-| Divi | proven through phase 08 on one small site (4.20.2); sliders/video untested | [`divi/`](divi/README.md) |
+| Divi | proven end to end and deployed on one small site (4.20.2); sliders/video untested | [`divi/`](divi/README.md) |
 | Beaver Builder, WPBakery, Bricks, Oxygen, … | not yet attempted | write one with [`_template.md`](_template.md) when you meet it, and contribute it back |
 
 ## What an adapter has to answer
@@ -23,5 +23,7 @@ Ask these in recon (phase 01), then settle them during phases 03–08. Each row 
 | Which widgets/shortcodes are dynamic (forms, search, maps with API keys, live feeds)? | phase 05 notice step, `archive-form-notice.php` | they render empty or print raw shortcodes once the plugin is gone (PRN-1) |
 | How does it paint images — `<img>`, CSS backgrounds at natural size, data attributes? | `scripts/optimize_images.py` | downscaling a natural-size background changes the composition (IMG-1) |
 | Is the builder or theme premium (licence-bound code)? | phase 10 `trim-archive.py` | the vendor zip cannot be re-downloaded without a licence (ARC-3): keep it or record that it is gone |
+
+`bash builders/apply.sh <builder> <site-repo>` installs an adapter's asset files (`export-extra-urls.txt`, `check-site-dir-only.txt`, `*.php.example`) into a site repo, idempotently; the generic `scrub.sql` and `export.py` already carry the builder-specific entries marked `builder:`.
 
 Write the answers down as an adapter (`builders/<name>/README.md`, plus any asset files), add its traps to `reference/gotchas.md` under the stable ID scheme, and set `BUILDER=<name>` in `.env`.

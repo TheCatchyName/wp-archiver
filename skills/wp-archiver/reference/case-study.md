@@ -46,3 +46,7 @@ Nearly all were caught by a **comparison against a measured reference** (pixel d
 
 ## Standing instructions that helped
 *"Slow me down if I'm missing anything"* (surfaced PII, secrets, LFS quotas, DNS pre-conditions) · *"leave the unsure ones and call me for a significant snag"* · a visible task plan per request, long jobs in the background with polling, small logical commits.
+
+## Second run (a different builder)
+
+A 4-URL Divi 4 site (no plugins installed, a dead contact form, ~100 MB of media) was taken from raw download to a live Cloudflare deploy in one session using this toolkit, with the owner deciding host, indexing and the form's replacement. Result: static copy at 0.000% parity with WordPress at desktop width and effectively 0 at phone width (WordPress stopped), 159 references resolving, a 113 MB trimmed archive zip from 251 MB. The run found six gaps in the toolkit and docs, all now fixed and indexed: VIS-8 (tall-window screenshots stretch viewport-unit sections), VIS-9 (check phone width), EXP-11 (protocol-relative URLs, masked by the still-running WordPress), EXP-12 (404-page assets), EXP-13 (redirect-only nav links), IMG-6 (hero backgrounds at q40), plus ENV-14 (`wp db query` TLS). The pattern repeated: each was caught by comparing against a measured reference, and the two that mattered most were again *test-method* errors (VIS-8, EXP-11 hidden by test setup), not site defects. Builder notes: [`../builders/divi/README.md`](../builders/divi/README.md).

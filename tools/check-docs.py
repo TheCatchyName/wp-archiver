@@ -75,8 +75,8 @@ def main():
     for name in sorted(set(SCRIPT.findall(tools))):
         if name in EXAMPLE_NAMES:
             continue
-        if not any((TOOLKIT / d / name).exists() for d in ("scripts", ".", "docker/wordpress")) \
-                and not any((SKILL / "builders" / "elementor" / name).exists() for _ in [0]):
+        if not any((base / name).exists() for base in (TOOLKIT / "scripts", TOOLKIT, TOOLKIT / "docker" / "wordpress",
+                                                        SKILL / "builders", SKILL / "builders" / "elementor")):
             problems.append(f"tool-index.md: script not found -> {name}")
 
     # 5. phase files linked from SKILL.md
