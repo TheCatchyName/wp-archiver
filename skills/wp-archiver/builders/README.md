@@ -5,7 +5,8 @@ The toolkit is builder-neutral on purpose; everything that depends on how a page
 | Builder | Status | Adapter |
 |---|---|---|
 | Elementor | proven on one site | [`elementor/`](elementor/README.md) |
-| Divi, Beaver Builder, WPBakery, Bricks, Oxygen, … | not yet attempted | write one with [`_template.md`](_template.md) when you meet it, and contribute it back |
+| Divi | **in progress** on the first Divi site (4.20.2) | [`divi/`](divi/README.md) |
+| Beaver Builder, WPBakery, Bricks, Oxygen, … | not yet attempted | write one with [`_template.md`](_template.md) when you meet it, and contribute it back |
 
 ## What an adapter has to answer
 

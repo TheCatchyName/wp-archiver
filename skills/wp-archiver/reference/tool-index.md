@@ -9,12 +9,13 @@ before reuse; the full list is [`site-config.md`](site-config.md). Gotcha IDs po
 | Phase | Script | Run | Reads → writes | Per-site? | Gotchas |
 |---|---|---|---|---|---|
 | setup | `requirements.txt` | `python -m venv .venv`, then `<venv python> -m pip install -r requirements.txt` | → `.venv/` (Pillow only) | no | ENV-3 |
+| baseline | `_cdp.py` | (imported by `visual.py`) | minimal DevTools-protocol client: full-page screenshot at a normal viewport | no | VIS-8 |
 | all | `_env.py` | (imported by the Python scripts) | `.env` → `ROOT`, `env()`, `require()` | no | — |
 | capture/retire | `survey-sizes.py` | `python scripts/survey-sizes.py <dir> [depth] [top]` | largest folders under a directory | no | ARC-1, ENV-12 |
 | restore | `seed-from-archive.sh` | `bash scripts/seed-from-archive.sh` | `archive/<host>/` → `db/seed.sql`, `.data/html/wp-content` (all plugins + active theme), `wp/uploads` | `.env`: `ACTIVE_THEME`, `UPLOADS_SKIP`, `DUMP_FILE` | RST-4, ARC-4 |
 | restore | `setup.sh` | `docker compose --profile tools run --rm wpcli sh setup.sh` | rewrites old origins (plain + JSON-escaped), `home`/`siteurl`, `blog_public=0`, builder CSS flush, Elementor font-CSS hosts, local admin from `.env` | `.env`: `OLD_HOSTS` | RST-5, RST-6, ENV-2 |
 | baseline | `snapshot.sh` | `bash scripts/snapshot.sh <label>` | live pages (URL list from `wp post list`) → `.data/snapshots/<label>/*.html`, `<label>.urls` | no | VIS-2 |
-| baseline | `visual.py shot` | `python scripts/visual.py shot <label> [slug…]` | URL list → `.data/snapshots/<label>-png/*.png` (1280×`SHOT_HEIGHT`, headless Chrome/Edge) | env `SHOT_HEIGHT` ≥ tallest page; `BROWSER`; `SHOT_WORKERS`, `SITE_ORIGIN`, `CAPTURE` | VIS-1,3,5, ENV-13 |
+| baseline | `visual.py shot` | `python scripts/visual.py shot <label> [slug…]` | URL list → `.data/snapshots/<label>-png/*.png` (1280 wide, full real height; headless Chrome/Edge via `_cdp.py`) | env `SHOT_MODE` (`cdp` default / `window`), `SHOT_VIEWPORT_HEIGHT`, `SHOT_SETTLE`, `BROWSER`, `SHOT_WORKERS`, `SITE_ORIGIN`; window mode: `SHOT_HEIGHT`, `CAPTURE` | VIS-1,3,5, ENV-13 |
 | baseline | `visual.py diff` | `python scripts/visual.py diff <a> <b>` | two PNG sets → per-page % + bbox, masks in `<b>-vs-<a>-diff/` | no | VIS-2, IMG-4 |
 | baseline | `diff-snapshots.sh` | `bash scripts/diff-snapshots.sh <a> <b>` | two HTML snapshots → changed-line counts + first diff | no | EXP-4 |
 | prune | `check.sh` | `bash scripts/check.sh <label> [base=baseline]` | snapshot + shots + both diffs + tag-line summary of removed assets | no | VIS-2, PRN-4 |

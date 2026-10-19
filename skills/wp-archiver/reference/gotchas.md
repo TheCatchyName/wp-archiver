@@ -82,7 +82,7 @@ for another builder lives in [`../builders/README.md`](../builders/README.md). W
 - **VIS-1** [baseline] *"0.000% on all pages" while three pages were taller than the capture window.* The first harness used a 6000 px
   window; home (7,988 px), formula and a post were taller, so the contact form at the bottom of Home was never compared. Window now 10000 px
   (Chrome caps at 16,384), `visual.py` warns when the bottom rows aren't uniform background. **Measure real page heights**
-  (same-origin iframes in a browser, tool-index §3) before trusting a result; state what a check did *not* cover.
+  (`visual.py` cdp mode prints them; VIS-8) before trusting a result; state what a check did *not* cover.
 - **VIS-2** [baseline] *Layout jitters between identical runs.* Warm + identical state = pixel-identical (noise floor 0.000%); right after
   a plugin toggle, CSS flush or restart a TablePress/DataTables page shifts ~1 px per table (5% of the page) and flips between layouts.
   Warm every page (`curl` loop) first; re-shoot before blaming a change; a known-flaky page passes if it matches *any* known layout.
@@ -98,6 +98,13 @@ for another builder lives in [`../builders/README.md`](../builders/README.md). W
 - **VIS-7** [baseline] *Prove the harness can fail.* Run it once against a change you know is visible; the Home form region not appearing
   in a diff was what exposed VIS-1.
 
+- **VIS-8** [baseline] *A "full-page" screenshot shows one giant hero section; the page is "9,000 px tall" in the capture but ~7,000 px in a browser.*
+  Page builders size sections in viewport units (`min-height: 90vh`). A capture window as tall as the page makes 1 vh = the page height, so every such
+  section stretches: the shot is of a layout no visitor sees, the real page is cut off, and "0.000%" proves nothing about the parts below the first
+  section. Capture at a normal viewport (1280×800) and take the full height from the surface: `visual.py`'s default `SHOT_MODE=cdp` (`_cdp.py`), which
+  also prints each page's real height (replacing the guess in VIS-1). Check any capture against `document.documentElement.scrollHeight` at 1280×800 in a
+  real browser. Iframes are not a measurement tool for this: viewport units resolve against the iframe's own height. `SHOT_MODE=window` is the legacy
+  tall-window mode, valid only when no section uses viewport units. Found on the first Divi site.
 ## PRN — pruning plugins
 
 - **PRN-1** [prune] *Removing the form plugin prints the literal `[form id="44"]` on Contact and blanks a widget on Home.* Replace the

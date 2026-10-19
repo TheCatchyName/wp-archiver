@@ -21,7 +21,7 @@ example.site (old host)                                          archive.example
 | [`skills/wp-archiver/`](skills/wp-archiver/SKILL.md) | The workflow skill: 11 phases (setup → recon → capture → restore → baseline → prune → scrub → export → images → publish → retire), one short file each, plus references |
 | [`skills/wp-archiver-recon/`](skills/wp-archiver-recon/SKILL.md) | Standalone read-only triage: *is this site a good candidate?* Needs no Docker or repo |
 | [`skills/wp-archiver/toolkit/`](skills/wp-archiver/toolkit/) | The copyable stack the skill installs into a site repo: Docker compose (MySQL + pinned WordPress + WP-CLI), the snapshot / pixel-diff harness, scrub, crawler, image optimiser, archive trimmer |
-| [`skills/wp-archiver/reference/gotchas.md`](skills/wp-archiver/reference/gotchas.md) | 76 indexed traps with symptom → cause → fix, so the agent fetches only the area it needs |
+| [`skills/wp-archiver/reference/gotchas.md`](skills/wp-archiver/reference/gotchas.md) | 77 indexed traps with symptom → cause → fix, so the agent fetches only the area it needs |
 | [`skills/wp-archiver/builders/`](skills/wp-archiver/builders/README.md) | Page-builder adapters (Elementor proven; the rest welcome) |
 | [`skills/wp-archiver/reference/case-study.md`](skills/wp-archiver/reference/case-study.md) | The reference run: numbers, the ten mistakes an agent made and how each was caught |
 

@@ -8,6 +8,13 @@
 Companion to snapshot.sh / diff-snapshots.sh: the HTML diff says *what markup* changed, this says
 whether anything *looks* different. URLs come from .data/snapshots/<label>.urls (written by
 snapshot.sh; a missing one falls back to baseline.urls). Output is under .data/snapshots/ (gitignored).
+
+Capture modes (SHOT_MODE):
+  cdp     (default) the viewport stays 1280 x 800 and the page's real height is measured and captured in full, so
+          sections sized in viewport units (min-height: 90vh) look like they do to a visitor (VIS-8). Lazy content is
+          scrolled into view first. Uses scripts/_cdp.py (stdlib only).
+  window  legacy: a headless window as tall as SHOT_HEIGHT (default 10000). Only valid when no section uses viewport
+          units, and it silently cuts off pages taller than the window (VIS-1).
 """
 import os
 import re
@@ -24,7 +31,10 @@ from PIL import Image, ImageChops
 ROOT = Path(__file__).resolve().parent.parent
 SNAP = ROOT / ".data" / "snapshots"
 WIDTH = 1280
-# Must exceed the tallest page (measure real heights first: VIS-1); Chrome caps screenshots at 16384. Override: SHOT_HEIGHT=12000
+MODE = os.environ.get("SHOT_MODE", "cdp")
+VIEWPORT_H = int(os.environ.get("SHOT_VIEWPORT_HEIGHT", "800"))  # cdp mode: the visitor-sized viewport
+SETTLE = float(os.environ.get("SHOT_SETTLE", "3"))               # cdp mode: seconds after load for the page's JS to initialise
+# window mode only: must exceed the tallest page (VIS-1); Chrome caps screenshots at 16384. Override: SHOT_HEIGHT=12000
 HEIGHT = int(os.environ.get("SHOT_HEIGHT", "10000"))
 # How long Chrome waits before the shot. The slow WordPress server needs the plain timeout (virtual time hangs
 # on it); the instant static server needs virtual time, or the shot lands mid-way through the page builder's JS init.
@@ -76,7 +86,19 @@ def urls_for(label: str) -> list[str]:
     sys.exit(f"no URL list for {label}; run scripts/snapshot.sh {label} first")
 
 
-def shoot(url: str, out: Path) -> str:
+def shoot_cdp(url: str, out: Path) -> str:
+    from _cdp import full_page_screenshot
+    out.unlink(missing_ok=True)
+    try:
+        png, height, truncated = full_page_screenshot(browser(), url, WIDTH, VIEWPORT_H, SETTLE, kill_tree)
+    except Exception as e:  # keep going: one bad page must not stop the set
+        return f"FAIL {out.name}  {type(e).__name__}: {e}"
+    out.write_bytes(png)
+    note = f"  WARNING: page is {height}px tall, capture truncated at 16000px" if truncated else ""
+    return f"ok  {out.name}  {height}px{note}"
+
+
+def shoot_window(url: str, out: Path) -> str:
     """Headless Chrome sometimes writes the PNG but never exits on very tall pages: on timeout kill the
     whole process tree and accept the file if it was written."""
     out.unlink(missing_ok=True)
@@ -97,6 +119,9 @@ def shoot(url: str, out: Path) -> str:
             if im.convert("RGB").crop((0, im.height - 50, im.width, im.height)).getcolors(maxcolors=1) is None:
                 note = f"  WARNING: bottom rows not uniform -- page may be taller than {HEIGHT}px, raise HEIGHT"
     return f"{'ok ' if ok else 'FAIL'} {out.name}{note}"
+
+
+shoot = shoot_cdp if MODE == "cdp" else shoot_window
 
 
 def cmd_shot(label: str, only: list[str]) -> None:

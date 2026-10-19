@@ -21,7 +21,7 @@ if [ -z "$SRC" ]; then
 fi
 WPC="$SRC/public_html/wp-content"
 DEST=".data/html/wp-content"
-SKIP=" ${UPLOADS_SKIP:-simply-static wp_encryption wpforms ai1wm-backups updraft backwpup} "
+SKIP=" ${UPLOADS_SKIP:-simply-static wp_encryption wpforms ai1wm-backups updraft backwpup siteground-optimizer-assets et_temp} "
 
 DUMP="${DUMP_FILE:+$SRC/$DUMP_FILE}"
 if [ -z "$DUMP" ]; then
