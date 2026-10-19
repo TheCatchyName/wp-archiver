@@ -1,0 +1,11 @@
+{
+  "name": "wp-archiver",
+  "owner": { "name": "Marcus Goh" },
+  "plugins": [
+    {
+      "name": "wp-archiver",
+      "source": "./",
+      "description": "Archive a mostly-static WordPress site as a static site on Cloudflare, with pixel-diff proof at every step. Includes a standalone recon skill."
+    }
+  ]
+}

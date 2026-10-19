@@ -1,0 +1,17 @@
+# Allowlist: everything at the top level is ignored unless listed below. Working folders for real sites
+# (one repo per site, e.g. <host>/) may sit next to the skills while you develop them: they must never be committed here.
+/*
+!/.claude-plugin/
+!/.github/
+!/skills/
+!/tools/
+!/docs/
+!/.gitignore
+!/README.md
+!/LICENSE
+!/AI-DISCLOSURE.md
+!/CONTRIBUTING.md
+!/CLAUDE.md
+
+__pycache__/
+*.pyc
