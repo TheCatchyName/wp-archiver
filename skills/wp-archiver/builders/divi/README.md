@@ -1,40 +1,48 @@
-# Builder adapter: Divi (IN PROGRESS: first trial, Divi 4.20.2 on WordPress 7.1.3)
+# Builder adapter: Divi (proven once through phase 08: Divi 4.20.2, WordPress 7.1.3, a 4-URL site)
 
-Set `BUILDER=divi` in `.env`. Written *during* the first Divi site, so each line is tagged **observed** (seen on that site) or **open** (still to confirm). Update it as the run goes; promote **open** items when proven.
+Set `BUILDER=divi` in `.env`. Written *during* the first Divi site; each line is tagged **observed** (seen and verified there) or **open** (not yet confirmed). Divi 5 and larger Divi sites are untested.
+
+Files here: [`check-site-dir-only.txt`](check-site-dir-only.txt) (copy to `scripts/`), [`divi-form-notice.php.example`](divi-form-notice.php.example) (copy to `scripts/`).
 
 ## Detect
-- **Observed:** `wp-content/themes/Divi/` in asset URLs (Divi is a *theme*, not a plugin: `plugins/` can be empty); `et_pb_*` and `et-boc` classes; Theme Builder regions as `et_pb_section_N_tb_header` / `_tb_footer`; post content stored as `[et_pb_*]` shortcodes; the theme directory name is capitalised (`Divi`): use it verbatim in `ACTIVE_THEME` on case-sensitive filesystems.
-- **Observed:** the generator meta names WordPress only; Divi does not announce its version there (read it from `style.css`).
+- **Observed:** `wp-content/themes/Divi/` in asset URLs. Divi is a *theme*, not a plugin: `plugins/` can be empty and `active_plugins` empty. `et_pb_*` and `et-boc` classes; Theme Builder regions as `et_pb_section_N_tb_header` / `_tb_footer`; content stored as `[et_pb_*]` shortcodes. The generator meta names WordPress only: read the Divi version from `themes/Divi/style.css`.
+- **Observed:** the theme directory name is capitalised (`Divi`): use it verbatim in `ACTIVE_THEME` (Linux is case-sensitive).
 
 ## Capture and layout
-- **Observed (VIS-8):** hero and feature sections are sized in viewport units, so the legacy tall-window screenshot stretched a hero to ~9,000 px. Use the default `SHOT_MODE=cdp`. Measured real heights at 1280×800 were a few hundred to ~7,000 px.
-- **Observed:** `#page-container` carries `overflow: auto hidden` and `body` `overflow: hidden auto`, but the document still scrolls normally (`documentElement.scrollHeight` is the page height).
+- **Observed (VIS-8):** hero and feature sections use viewport-unit heights, so a tall-window screenshot stretched a hero to ~9,000 px. The default `SHOT_MODE=cdp` is required.
+- **Observed (VIS-9):** the footer social icons exist only at phone width; compare at 390 px too.
 
-## Licensing
-- **Observed:** the theme is premium (Elegant Themes) and ~54 MB. It cannot be re-downloaded without a licence (ARC-3), so it stays in the archive zip (the active theme is always on `trim-archive.py`'s keep-list). `mu-plugins/et-safe-mode` is Divi's support helper and is not needed locally.
+## Licensing and secrets
+- **Observed (ARC-3):** the theme is premium (Elegant Themes), ~54 MB, not re-downloadable without a licence: it stays in the archive zip (the active theme is always on `trim-archive.py`'s keep-list). `mu-plugins/et-safe-mode` is Divi's support helper; it is not copied locally.
+- **Observed (DB-4):** option `et_automatic_updates_options` holds the owner's **Elegant Themes username and API key**; `et_support_site_id` is a support-site token. Both are deleted by the scrub, and the raw dump/archive zip that still contains them is a secret. Consider rotating the API key if the raw dump ever left your control.
 
 ## Dynamic widgets
-- **Observed:** the contact page uses Divi's contact-form module (`et_pb_contact_form`, a maths captcha question) that posts to the page itself. It is dead on a static host: replace it with a deliberate notice or a `mailto:` (owner's decision). `archive-form-notice.php.example` is Elementor-shaped; for Divi edit the `[et_pb_contact_form …]` shortcode in `post_content` (and Theme Builder templates) instead of a widget tree.
+- **Observed:** the contact page uses Divi's contact-form module (`[et_pb_contact_form …]…[/et_pb_contact_form]`) that posts back to the page: dead on a static host. `divi-form-notice.php.example` replaces it with an owner-worded notice and clears Divi's per-post caches. Saved library layouts (`et_pb_layout`) may also contain a form: they are not rendered on pages and were left alone.
 
 ## Runtime assets (feeds `scripts/export-extra-urls.txt`)
-- **Open:** Divi writes generated CSS/JS under `wp-content/et-cache/<post-id>/…` and references it from the HTML; confirm the crawler follows those links and whether any chunk is requested only at runtime (check the static server's 404 log, phase 07).
-- **Open:** video backgrounds (`et_pb_section_video_bg` appeared in the markup but no `.mp4` URL was found in the rendered home page): confirm whether any video asset is needed.
+- **Observed:** nothing extra was needed on a site with no sliders in use: the crawler followed the generated `wp-content/et-cache/<post-id>/*.css` links, and the static server's 404 log stayed empty. Divi's generated CSS/JS lives under `et-cache/` and is served as ordinary static files.
+- **Observed (EXP-12):** the 404 page references its own `et-cache/notfound/*.css`; `export.py` now crawls what the 404 page references.
+- **Open:** Divi sliders (`et_pb_slide` appeared in markup) and video backgrounds (`et_pb_section_video_bg`) were present but not exercised by interaction; confirm with a real browser on a site that uses them.
 
 ## Absolute URLs outside the database
-- **Open:** check `et-cache` and any generated CSS for the old host after `setup.sh`; Divi's Theme Builder and layout data live in `post_content` / `postmeta` and were rewritten by the normal `search-replace` (183 replacements in the first run: plain; no JSON-escaped hits needed).
+- **Observed (EXP-11):** Divi's inline CSS uses **protocol-relative** URLs (`url(//host/wp-content/themes/Divi/core/admin/fonts/modules/social/modules.woff)`): the exporter now rewrites them, and `check-site.py` flags leftovers as `LEAK`.
+- **Observed:** Theme Builder header/footer are posts of type `et_header_layout` / `et_body_layout` / `et_footer_layout`; their hand-typed links (`/home`, `/contact`) were redirected by WordPress on the live site and 404 on a static host (EXP-13). Fix in the DB.
+- **Observed:** the normal plain `search-replace` rewrote the old host in shortcodes (183 replacements in the first run); no JSON-escaped form was needed.
 
 ## Caches and regeneration
-- **Open:** how to flush Divi's generated CSS (`et-cache`) after a DB change: deleting the folder, or Divi > Theme Options > Builder > Advanced > Static CSS File Generation. Until confirmed, warm every page before judging a diff (VIS-2).
+- **Observed:** replacing content via `wp_update_post` required deleting the page's cached Divi meta (`_et_builder_module_features_cache`, `_et_dynamic_cached_shortcodes`, `_et_dynamic_cached_attributes`, `et_enqueued_post_fonts`); the form-notice script does this and the page then rendered the new content. Divi regenerates `et-cache/` on render.
+- **Open:** whether `et_enqueued_post_fonts` can be deleted site-wide in the scrub (it was kept: DB-2).
 
 ## Scrub notes (feeds `scripts/scrub.sql`)
-- **Observed:** a former SEO plugin (AIOSEO), a visitor-analytics plugin (MonsterInsights) and a hosting AI helper left tables and options behind even though no plugin was installed or active (`active_plugins` was empty): `*_aioseo_*`, `*_monsterinsights_cache`, `*_sg_ai_log_events`, `*_actionscheduler_*`. These go on the scrub's drop list.
-- **Open:** Divi's own options (`et_divi`, `et_*`) and postmeta (`_et_pb_*`): which are caches and which are settings the render depends on (DB-2). Inventory by prefix before deleting any.
+- **Observed:** leftovers of plugins that were no longer installed (an SEO plugin, a visitor-analytics plugin, a hosting helper, ActionScheduler) remained as options, tables, user meta and taxonomy rows even with `active_plugins` empty: inventory by prefix and drop them (PRN-2). Hosting-helper options include service keys and a data token.
+- **Observed:** `_et_builder_da_feature_cache` (option) is a Divi cache and safe to delete. **Kept**, because they may be settings or registries the render depends on (DB-2): options `et_divi`, `et_pb_*` (incl. per-form `et_pb_contact_form_*`), `et_google_api_settings`; post meta `_et_pb_*`, `_et_builder_*`, `_global_colors_info`. Parity held at 0.000% with them kept.
+- **Open:** which `_et_*` post meta can be dropped without a visual change.
 
 ## Head cruft (feeds `HEAD_STRIP`)
-- **Open:** nothing identified yet.
+- **Observed:** nothing Divi-specific needed stripping.
 
 ## Images
-- **Open:** whether Divi draws images as CSS backgrounds at natural size (IMG-1): the optimiser keeps backgrounds at full size and only recompresses them.
+- **Observed (IMG-1, IMG-6):** hero sections draw large photos as CSS backgrounds; the optimiser kept them at natural size and recompressed (one needed q40 to approach the budget): look at the crop.
 
 ## Traps
-VIS-8 (found here). Add new ones to `reference/gotchas.md` and cite them.
+VIS-8, VIS-9, EXP-11, EXP-12, EXP-13, IMG-6, ENV-14 (all found on this site).

@@ -13,6 +13,7 @@
 Baseline HTML + PNG sets exist for every URL at full height (no truncation warnings); noise floor 0.000% (flaky pages identified and named); one capture's height cross-checked in a real browser.
 
 ## Notes
+- Take a second baseline at phone width (`SHOT_WIDTH=390 SHOT_VIEWPORT_HEIGHT=844`, label `baseline-m`) if the site is responsive (VIS-9).
 - Keep only `baseline`, the full-height PNG sets and the current reference; delete scratch renders (they reached 450 MB).
 - The baseline can itself be wrong (a font that fails because the old host's certificate expired: RST-6/VIS-6) — later differences need explanations, not just verdicts.
 - Reference run: 17 URLs; one page flipped between two layouts; the first window (6000 px) hid the bottom of three pages.

@@ -1,0 +1,37 @@
+<?php
+/**
+ * EXAMPLE / TEMPLATE (Divi) -- copy to divi-form-notice.php, fill in the constants, and run:
+ *
+ *   docker compose --profile tools run --rm wpcli wp eval-file divi-form-notice.php
+ *
+ * Divi's contact-form module is a shortcode pair [et_pb_contact_form ...]...[/et_pb_contact_form] inside post_content
+ * (and possibly inside Theme Builder templates). It posts back to the page, which a static host cannot receive, so it
+ * is replaced with a deliberate notice (PRN-1). Idempotent. Wording is the site owner's call.
+ */
+
+// PER-SITE ---------------------------------------------------------------------------------------------------
+const PAGE_IDS = [123];                                   // posts/pages that carry the form (`wp post list`, grep post_content)
+const NOTICE_HTML = '<p>This form is no longer active. To get in touch, email <a href="mailto:hello@example.site">hello@example.site</a>.</p>';
+// ------------------------------------------------------------------------------------------------------------
+
+$form = '/\[et_pb_contact_form\b.*?\[\/et_pb_contact_form\]/s';
+$replacement = '[et_pb_text _builder_version="4.20.2" _module_preset="default"]' . NOTICE_HTML . '[/et_pb_text]';
+
+foreach (PAGE_IDS as $id) {
+    $content = get_post_field('post_content', $id);
+    $new = preg_replace($form, $replacement, $content, -1, $n);
+    if ($n) {
+        wp_update_post(['ID' => $id, 'post_content' => wp_slash($new)]);
+        // Divi caches what a page's modules need; drop it so the new content is rendered afresh.
+        foreach (['_et_builder_module_features_cache', '_et_dynamic_cached_shortcodes', '_et_dynamic_cached_attributes', 'et_enqueued_post_fonts'] as $key) {
+            delete_post_meta($id, $key);
+        }
+    }
+    echo "post $id: $n form(s) replaced\n";
+}
+echo "Also check Theme Builder templates (et_header_layout / et_body_layout / et_footer_layout posts) for the shortcode:\n";
+foreach (get_posts(['post_type' => ['et_header_layout', 'et_body_layout', 'et_footer_layout', 'et_pb_layout'], 'numberposts' => -1, 'post_status' => 'any']) as $p) {
+    if (strpos($p->post_content, '[et_pb_contact_form') !== false) {
+        echo "  {$p->post_type} {$p->ID} contains a contact form\n";
+    }
+}

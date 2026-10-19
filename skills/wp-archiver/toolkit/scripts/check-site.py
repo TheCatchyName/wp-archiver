@@ -25,6 +25,11 @@ JSONPATH = re.compile(r"""["']((?:\\?/)wp-(?:content|includes)(?:\\?/)[^"'\s<>\\
 # Things that are not files on disk by design.
 IGNORE = re.compile(r"^(data:|mailto:|tel:|javascript:|#|about:|blob:)")
 DIR_ONLY = {"/wp-content/plugins/elementor/assets/", "/wp-content/uploads", "/wp-content/uploads/"}  # JS config base URLs
+# Builder adapters add more base-URL directories (not files on disk by design): one path per line in scripts/check-site-dir-only.txt.
+_extra = Path(__file__).resolve().parent / "check-site-dir-only.txt"
+if _extra.exists():
+    DIR_ONLY |= {l.strip().rstrip("/") for l in _extra.read_text().splitlines() if l.strip() and not l.startswith("#")}
+    DIR_ONLY |= {p + "/" for p in DIR_ONLY}
 
 
 def exists(path):
@@ -54,7 +59,10 @@ def refs(text, base_dir, kind):
     res = []
     for r in out:
         r = html.unescape(r.strip())
-        if not r or IGNORE.match(r) or r.startswith("//") or re.search(r"[*{}$<>\s,]", r):  # globs, templates, prose
+        if not r or IGNORE.match(r) or re.search(r"[*{}$<>\s,]", r):  # globs, templates, prose
+            continue
+        if r.startswith("//"):  # protocol-relative: a host, not a local path (a localhost one is a leak: EXP-11)
+            res.append(("EXTERNAL", "http:" + r))
             continue
         if re.match(r"https?://", r):
             res.append(("EXTERNAL", r))
@@ -86,9 +94,12 @@ def main():
             seen.add((src, ref))
             print(f"MISSING  {ref}   (in {src})")
     print(f"{len(seen)} missing")
+    leaks = {h: n for h, n in external.items() if h.split(":")[0] == "localhost" or h.endswith(".test")}
+    for h, n in leaks.items():
+        print(f"LEAK     {n} reference(s) point at {h}: the export did not rewrite them (EXP-11)")
     resource_hosts = {h: n for h, n in external.items() if any(k in h for k in ("fonts.", "gravatar", "cdn", "gstatic", "googleapis"))}
     print("third-party resource hosts:", dict(resource_hosts) or "none")
-    return 1 if seen else 0
+    return 1 if seen or leaks else 0
 
 
 if __name__ == "__main__":

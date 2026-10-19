@@ -159,6 +159,7 @@ class Exporter:
             text = f.read_text(encoding="utf-8", errors="replace")
             new = re.sub(r"https?:(?:\\?/){2}" + host + r"(?=\\?/)", "", text)       # http://host/x -> /x  (also JSON-escaped)
             new = re.sub(r"https?:(?:\\?/){2}" + host + r"(?![\w.-])", "/", new)     # bare origin -> /
+            new = re.sub(r"(?<![:\w/\\])(?:\\?/){2}" + host + r"(?=\\?/)", "", new)  # protocol-relative //host/x -> /x (inline CSS url(), JSON)
             if f.suffix.lower() == ".html":
                 for pat in HEAD_STRIP:
                     new = re.sub(pat, "", new, flags=re.I)
@@ -214,6 +215,9 @@ def main():
     status, ctype, body, _ = fetch(a.origin + "/this-page-does-not-exist-404/")
     if status == 404:
         (out / "404.html").write_bytes(body)
+        # The 404 page can load assets no normal page does (Divi: et-cache/notfound/*.css): crawl what it references too.
+        n404 = ex.crawl(sorted(ex.find(body.decode("utf-8", "replace"), a.origin + "/this-page-does-not-exist-404/", "html")))
+        print(f"404 page: fetched {n404} more files it references")
     (out / "robots.txt").write_text("User-agent: *\nAllow: /\n", encoding="utf-8", newline="\n")
     (out / "_headers").write_text("/*\n  X-Robots-Tag: noindex, nofollow\n  X-Content-Type-Options: nosniff\n", encoding="utf-8", newline="\n")
 

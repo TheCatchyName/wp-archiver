@@ -55,6 +55,9 @@ for another builder lives in [`../builders/README.md`](../builders/README.md). W
   `find` predicates.* Use Python `os.walk` for sizes (`scripts/survey-sizes.py`) and simple `find` forms.
 - **ENV-13** [baseline] *Orphaned headless Chrome after a timeout.* Kill only processes whose command line has `--headless` and a temp
   profile (PowerShell `Get-CimInstance Win32_Process`); never touch the user's own Chrome. `visual.py` now kills its own tree.
+- **ENV-14** [scrub/any] *`wp db query` (or `wp db export`) in the `wpcli` container fails with "TLS/SSL error: self-signed certificate in certificate chain".*
+  The cli image's MySQL client insists on TLS against MySQL 8.4's self-signed certificate. Run SQL through the db container instead
+  (`docker compose exec -T db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"' < file.sql`) or add `--skip-ssl`.
 
 ## RST — capture and restore
 
@@ -105,6 +108,9 @@ for another builder lives in [`../builders/README.md`](../builders/README.md). W
   also prints each page's real height (replacing the guess in VIS-1). Check any capture against `document.documentElement.scrollHeight` at 1280×800 in a
   real browser. Iframes are not a measurement tool for this: viewport units resolve against the iframe's own height. `SHOT_MODE=window` is the legacy
   tall-window mode, valid only when no section uses viewport units. Found on the first Divi site.
+- **VIS-9** [export] *Desktop parity is 0.000% but a phone shows a broken icon.* Responsive breakpoints are separate layouts: elements that exist only
+  at narrow widths (a footer social row, the mobile menu) are not in a 1280 px capture. Repeat the WordPress-vs-static comparison at 390 px
+  (`SHOT_WIDTH=390 SHOT_VIEWPORT_HEIGHT=844`, new labels) before calling parity proven. Found on the first Divi site, where it exposed EXP-11.
 ## PRN — pruning plugins
 
 - **PRN-1** [prune] *Removing the form plugin prints the literal `[form id="44"]` on Contact and blanks a widget on Home.* Replace the
@@ -159,6 +165,16 @@ for another builder lives in [`../builders/README.md`](../builders/README.md). W
 - **EXP-9** [export] *WordPress's default favicon ships when no Site Icon is set.* Add a favicon via `overlay/` (+ `<link rel=icon>` tags).
 - **EXP-10** [export] *Third-party runtime requests remain* (Google Fonts, Gravatar). A decision, not a bug: here accepted (worst case
   fallback fonts / missing avatars). `check-site.py` lists them.
+- **EXP-11** [export] *An icon font (or any `url()` in inline CSS) is missing on the static site, yet the static server's 404 log is empty.*
+  Inline CSS can use protocol-relative URLs (`url(//localhost/wp-content/…)`); a rewrite that only handles `http(s)://host` and JSON-escaped `\/` leaves them, and
+  the browser resolves them to the *other* server (WordPress on port 80, still running) cross-origin, where fonts are blocked by CORS: a missing glyph, no 404.
+  Fixed in `export.py` (`//host/` → `/`) and flagged by `check-site.py` as `LEAK`. Prove a static copy with **WordPress stopped**
+  (`docker compose stop wordpress`) so nothing can fall through to it. Found on the first Divi site.
+- **EXP-12** [export] *The 404 page loads CSS no normal page does and those files are missing from `site/`.* The 404 response is fetched separately from the
+  crawl (Divi: `et-cache/notfound/*.css`, a customizer CSS with its own `?ver`). `export.py` now crawls what the 404 page references.
+- **EXP-13** [export] *Nav links to `/home`, `/contact` pass on the live site but 404 on the static one.* WordPress redirects guessed permalinks (301 to
+  `/`, `/contact-us/`); a static host does not. They sit in builder layouts (Divi Theme Builder header/footer are posts of type `et_*_layout`), not in the menu.
+  Find them from `check-site.py`'s MISSING list and fix in the DB (`wp search-replace 'href="/home"' 'href="/"'`), never in `site/` (EXP-8).
 
 ## IMG — images and the raw mirror
 
@@ -173,6 +189,9 @@ for another builder lives in [`../builders/README.md`](../builders/README.md). W
   0.000%. For hero photos eyeball the crop too.
 - **IMG-5** [images] *Git LFS limits.* GitHub free: 1 GiB storage + 1 GiB/month bandwidth. One 34 MB zip is fine; don't commit changed copies
   casually. Alternative: a GitHub Release asset (no quota, not in clones).
+- **IMG-6** [images] *A full-bleed hero photo ends at "q40, size kept (over budget)".* The optimiser keeps CSS-background images at their natural
+  size (IMG-1), so a 2560 px photo can only meet the 200 KB budget by dropping quality to q40, which can look soft on a large screen. Parity passes (the diff
+  threshold ignores small gray differences: IMG-4), so look at the crop by eye and, if it is poor, raise `--max-kb` for that run or accept a larger file.
 
 ## PUB — git, Cloudflare, deploy
 

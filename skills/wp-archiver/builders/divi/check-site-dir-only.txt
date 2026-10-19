@@ -1,0 +1,5 @@
+# Divi: base-URL directories its JavaScript config points at (not files on disk by design)
+/wp-content/themes/Divi/images
+/wp-content/themes/Divi/includes/builder/images
+/wp-content/themes/Divi/includes/builder/frontend-builder/assets/vendors
+/wp-includes/js/mediaelement

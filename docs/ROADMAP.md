@@ -10,4 +10,5 @@ Not promises: the gaps the reference run and this extraction left open, in rough
 6. **macOS / Linux pass** over the toolkit: venv path detection is in, port 80 and browser discovery are untested.
 7. **Cloudflare Pages/Workers drift check**: the publish phase tells the agent to re-read the docs; consider a small script that diffs `wrangler.jsonc` against the current schema.
 8. **Automated smoke test** of the toolkit against a tiny synthetic WordPress seed, so regressions show up without a real site. (The generalisation was checked by hand: rebuild a known site from its scrubbed seed and diff the output against the original; that procedure is the starting point.)
-9. **Re-test the pixel-diff harness** (`snapshot.sh`, `visual.py`, `check.sh`) after the generalisation — it was not part of the regression run.
+9. ~~Re-test the pixel-diff harness after the generalisation~~ — done on the second site; it needed a new capture mode (VIS-8).
+10. **Divi follow-ups:** sliders and video backgrounds, Divi 5, a larger site; which `_et_*` post meta the scrub can drop.

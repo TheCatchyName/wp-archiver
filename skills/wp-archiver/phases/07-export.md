@@ -1,17 +1,17 @@
 # Phase 07 — Static export (crawler) and proof
 
-**Goal** `site/`: plain files, root-relative, no WordPress machinery, visually identical to the dynamic site. **Needs** phase 06 state running at `http://localhost`. **Produces** `site/`, `overlay/`, a filled `scripts/export-extra-urls.txt`. **Gotchas** EXP-1..10, VIS-4, ENV-1.
+**Goal** `site/`: plain files, root-relative, no WordPress machinery, visually identical to the dynamic site. **Needs** phase 06 state running at `http://localhost`. **Produces** `site/`, `overlay/`, a filled `scripts/export-extra-urls.txt`. **Gotchas** EXP-1..13, VIS-4, VIS-9, ENV-1.
 
 ## Steps
 1. **Fix content bugs in the DB, not in `site/`** (EXP-8): broken `href`s found in the crawl log → `wp search-replace` in `post_content` *and* builder data (`--dry-run` first), then flush the builder's CSS cache.
 2. **Favicon** (EXP-9): `python scripts/make-favicon.py <logo-file>` → `overlay/` (colour-to-alpha on a white-background logo; `.ico` 16/32/48, 192 px, apple-touch). The logo is the header's `<img class="custom-logo">` under `wp/uploads/`.
 3. `python scripts/export.py` — crawls `/`, the WP-CLI page list and `export-extra-urls.txt`; drops query strings; rewrites the origin to root-relative in all text files; strips generator/RSD/REST/oEmbed/shortlink/pingback/feed/XFN/emoji tags; makes canonical/OG absolute on `FINAL_URL`; writes `404.html`, `robots.txt` (`Allow: /`, EXP-7) and `_headers` (`X-Robots-Tag: noindex, nofollow`); copies `overlay/`. Add head cruft your theme/builder emits to `HEAD_STRIP`; add real dynamic URLs to `SKIP`.
 4. **Find runtime-only assets:** `python scripts/serve-site.py` (background, port 9090) → browse or shoot → `sort -u .data/export/404.log` → add every missing path to `scripts/export-extra-urls.txt` → re-export → repeat until the log is empty (EXP-1). For Elementor start from `builders/elementor/export-extra-urls.txt`; other builders: [`../builders/README.md`](../builders/README.md).
-5. **Prove parity serially:** `SHOT_WORKERS=1 SITE_ORIGIN=http://localhost:9090 python scripts/visual.py shot static`, then `python scripts/visual.py diff <wordpress-shot> static` → 0.000% (a known flaky band may flip; re-shoot). **Never parallel** (VIS-4). If one page looks wrong, check it in a real browser (several reloads) before changing anything.
-6. **Integrity + hygiene:** `python scripts/check-site.py` (0 missing) and grep `site/` for `localhost`, `wp-json`, `xmlrpc`, `wp-login` and every old host (0 each). Review the third-party hosts it lists (EXP-10).
+5. **Prove parity serially, with WordPress stopped:** `docker compose stop wordpress` first, so nothing can fall through to it (EXP-11). Then `SHOT_WORKERS=1 SITE_ORIGIN=http://localhost:9090 python scripts/visual.py shot static`, then `python scripts/visual.py diff <wordpress-shot> static` → 0.000% (a known flaky band may flip; re-shoot). **Never parallel** (VIS-4). Repeat at phone width against WordPress shots taken the same way: `SHOT_WIDTH=390 SHOT_VIEWPORT_HEIGHT=844`, labels like `wp-m` / `static-m` (VIS-9). If one page looks wrong, check it in a real browser (several reloads) before changing anything. `docker compose start wordpress` afterwards.
+6. **Integrity + hygiene:** `python scripts/check-site.py` (0 missing, no `LEAK`) and grep `site/` for `localhost`, `wp-json`, `xmlrpc`, `wp-login` and every old host (0 each). Review the third-party hosts it lists (EXP-10). Redirected-only links (`/home`, `/contact`) show up as MISSING: fix them in the DB (EXP-13).
 
 ## Exit criteria
-0.000% (or explained) on every page, 0 missing references, empty 404 log, no leftover local/old hosts.
+0.000% (or explained) on every page at desktop and phone width with WordPress stopped, 0 missing references, no `LEAK`, empty 404 log, no leftover local/old hosts.
 
 ## Decisions
 Self-host third-party fonts/avatars or accept them (reference run: accepted). Keep or drop each remaining visible plugin feature.

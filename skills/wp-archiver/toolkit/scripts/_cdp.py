@@ -123,8 +123,11 @@ def _launch(chrome, profile, width, height):
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=(os.name != "nt"))
     port_file = Path(profile) / "DevToolsActivePort"
     for _ in range(100):
-        if port_file.exists() and port_file.read_text().strip():
-            return proc, int(port_file.read_text().splitlines()[0])
+        try:  # on Windows the file can be locked while the browser is still writing it
+            if port_file.exists() and port_file.read_text().strip():
+                return proc, int(port_file.read_text().splitlines()[0])
+        except (PermissionError, OSError, ValueError):
+            pass
         time.sleep(0.2)
     raise TimeoutError("browser did not publish its DevTools port")
 

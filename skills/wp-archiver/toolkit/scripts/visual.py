@@ -30,7 +30,7 @@ from PIL import Image, ImageChops
 
 ROOT = Path(__file__).resolve().parent.parent
 SNAP = ROOT / ".data" / "snapshots"
-WIDTH = 1280
+WIDTH = int(os.environ.get("SHOT_WIDTH", "1280"))  # also try 390 (phone) with SHOT_VIEWPORT_HEIGHT=844: responsive breakpoints are separate layouts
 MODE = os.environ.get("SHOT_MODE", "cdp")
 VIEWPORT_H = int(os.environ.get("SHOT_VIEWPORT_HEIGHT", "800"))  # cdp mode: the visitor-sized viewport
 SETTLE = float(os.environ.get("SHOT_SETTLE", "3"))               # cdp mode: seconds after load for the page's JS to initialise

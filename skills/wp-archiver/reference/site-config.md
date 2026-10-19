@@ -30,7 +30,7 @@ Almost every per-site value lives in one file, `.env` (see `.env.example`), read
 | `scripts/scrub.sql` | the PER-SITE sections (ship as commented examples): removed plugins' option families and tables, stray post types, stale custom-CSS posts |
 | `scripts/trim-archive.py` | `HISTORICAL` and `EXTRA_KEEP` lists at the top |
 | `scripts/visual.py` | nothing normally; `SHOT_HEIGHT`, `BROWSER` are env vars |
-| `scripts/check-site.py` | `DIR_ONLY` (JS config base URLs that are directories, not files) if the builder needs more |
+| `scripts/check-site-dir-only.txt` | optional: JS config base-URL directories that are not files on disk (a builder adapter ships its list, e.g. `builders/divi/`) |
 | `wrangler.jsonc` | `name`, `routes[0].pattern`, `compatibility_date` (today), `workers_dev` |
 | `docker/wordpress/plugins.lock` | the real survivors (phase 05) |
 | `CLAUDE.md`, `docs/STATUS.md` | the placeholders |
