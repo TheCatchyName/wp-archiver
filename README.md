@@ -56,6 +56,17 @@ Just curious whether a site qualifies? Ask: *"Use wp-archiver-recon on https://e
 
 Docker (Desktop or Engine) · a POSIX shell (Git Bash on Windows) · Python 3.11+ (Pillow is the only dependency) · git (+ git-lfs if you keep the raw media mirror in LFS) · Chrome or Edge for screenshots · a Cloudflare account to deploy · an AI coding agent that can run shell commands.
 
+## Compatibility
+
+| Page builder | Version proven | Sites | Notes |
+|---|---|---|---|
+| Elementor | 4.3 | 1 (17 URLs) | adapter: [`builders/elementor/`](skills/wp-archiver/builders/elementor/README.md) |
+| Divi | **4.20.2 (Divi 4)** | 1 (4 URLs), deployed | adapter: [`builders/divi/`](skills/wp-archiver/builders/divi/README.md). Divi 5 untested |
+| Block themes / plain themes | n/a | 0 | no adapter needed; untested in practice |
+| Beaver Builder, WPBakery, Bricks, Oxygen, ... | - | 0 | write an adapter with [`_template.md`](skills/wp-archiver/builders/_template.md) |
+
+All runs so far: WordPress 7.1.3, Windows 10 + Docker Desktop + Git Bash. See [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Status and limits
 
 - **Proven on one site**: a 17-page Elementor site, Windows 10 + Docker Desktop + Git Bash. The generalised toolkit was re-run against that same site and reproduced its output; it has since archived and deployed a second, different site (Divi) end to end, with six gaps found and fixed along the way (what is and isn't verified: [`AI-DISCLOSURE.md`](AI-DISCLOSURE.md)).

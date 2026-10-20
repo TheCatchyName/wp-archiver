@@ -1,8 +1,8 @@
 {
   "name": "wp-archiver",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI-agent workflow that archives a mostly-static WordPress site as plain files on Cloudflare, proving each step against a frozen baseline.",
   "author": { "name": "Marcus Goh" },
   "license": "MIT",
-  "keywords": ["wordpress", "static-site", "archive", "cloudflare", "migration", "agent-skills"]
+  "keywords": ["wordpress", "elementor", "divi", "static-site", "archive", "cloudflare", "migration", "agent-skills"]
 }

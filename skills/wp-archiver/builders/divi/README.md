@@ -1,4 +1,4 @@
-# Builder adapter: Divi (proven once, end to end and deployed: Divi 4.20.2, WordPress 7.1.3, a 4-URL site)
+# Builder adapter: Divi 4 (proven end to end and deployed once: Divi **4.20.2**, WordPress 7.1.3, a 4-URL site). Divi 5 untested.
 
 Set `BUILDER=divi` in `.env`. Written *during* the first Divi site; each line is tagged **observed** (seen and verified there) or **open** (not yet confirmed). Divi 5 and larger Divi sites are untested.
 
@@ -24,7 +24,7 @@ Files here: [`check-site-dir-only.txt`](check-site-dir-only.txt) (copy to `scrip
 ## Runtime assets (feeds `scripts/export-extra-urls.txt`)
 - **Observed:** nothing extra was needed on a site with no sliders in use: the crawler followed the generated `wp-content/et-cache/<post-id>/*.css` links, and the static server's 404 log stayed empty. Divi's generated CSS/JS lives under `et-cache/` and is served as ordinary static files.
 - **Observed (EXP-12):** the 404 page references its own `et-cache/notfound/*.css`; `export.py` now crawls what the 404 page references.
-- **Open:** Divi sliders (`et_pb_slide` appeared in markup) and video backgrounds (`et_pb_section_video_bg`) were present but not exercised by interaction; confirm with a real browser on a site that uses them.
+- **Observed:** the home page uses Divi sliders (`et_pb_slider`) and video-background sections (`et_pb_section_video_bg`); the static copy matched WordPress pixel-for-pixel at load, at desktop and phone width, with a clean 404 log. **Open:** slider autoplay/transitions and video playback were not exercised by interaction; confirm in a real browser.
 
 ## Absolute URLs outside the database
 - **Observed (EXP-11):** Divi's inline CSS uses **protocol-relative** URLs (`url(//host/wp-content/themes/Divi/core/admin/fonts/modules/social/modules.woff)`): the exporter now rewrites them, and `check-site.py` flags leftovers as `LEAK`.
@@ -36,7 +36,7 @@ Files here: [`check-site-dir-only.txt`](check-site-dir-only.txt) (copy to `scrip
 - **Open:** whether `et_enqueued_post_fonts` can be deleted site-wide in the scrub (it was kept: DB-2).
 
 ## Scrub notes (feeds `scripts/scrub.sql`)
-- **Observed:** leftovers of plugins that were no longer installed (an SEO plugin, a visitor-analytics plugin, a hosting helper, ActionScheduler) remained as options, tables, user meta and taxonomy rows even with `active_plugins` empty: inventory by prefix and drop them (PRN-2). Hosting-helper options include service keys and a data token.
+- **Observed:** `bash scripts/inventory.sh` (run on the raw DB) surfaced all of the following, including the credential options, with values masked. Leftovers of plugins that were no longer installed (an SEO plugin, a visitor-analytics plugin, a hosting helper, ActionScheduler) remained as options, tables, user meta and taxonomy rows even with `active_plugins` empty: inventory by prefix and drop them (PRN-2). Hosting-helper options include service keys and a data token.
 - **Observed:** `_et_builder_da_feature_cache` (option) is a Divi cache and safe to delete. **Kept**, because they may be settings or registries the render depends on (DB-2): options `et_divi`, `et_pb_*` (incl. per-form `et_pb_contact_form_*`), `et_google_api_settings`; post meta `_et_pb_*`, `_et_builder_*`, `_global_colors_info`. Parity held at 0.000% with them kept.
 - **Open:** which `_et_*` post meta can be dropped without a visual change.
 

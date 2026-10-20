@@ -4,8 +4,8 @@ The toolkit is builder-neutral on purpose; everything that depends on how a page
 
 | Builder | Status | Adapter |
 |---|---|---|
-| Elementor | proven on one site | [`elementor/`](elementor/README.md) |
-| Divi | proven end to end and deployed on one small site (4.20.2); sliders/video untested | [`divi/`](divi/README.md) |
+| Elementor 4.3 | proven on one site | [`elementor/`](elementor/README.md) |
+| Divi 4 (4.20.2) | proven end to end and deployed on one small site; Divi 5 untested; slider/video interaction untested | [`divi/`](divi/README.md) |
 | Beaver Builder, WPBakery, Bricks, Oxygen, … | not yet attempted | write one with [`_template.md`](_template.md) when you meet it, and contribute it back |
 
 ## What an adapter has to answer

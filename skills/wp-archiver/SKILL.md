@@ -7,7 +7,7 @@ description: Archive a WordPress site as a static site on Cloudflare — capture
 
 Turns a mostly-static WordPress site (no logins, shop or member areas) into plain files on Cloudflare Workers, with every step proven against a frozen baseline rather than assumed. The agent does the reversible local work; **the owner decides, deploys and pushes**.
 
-Proven on one Elementor site (Windows + Docker Desktop + Git Bash). Other page builders and operating systems are untested: expect to extend [`builders/`](builders/README.md) and report what you learn.
+Proven on two sites, one per builder: **Elementor 4.3** and **Divi 4.20** (Windows + Docker Desktop + Git Bash; both WordPress 7.1.3). Divi 5, other page builders and other operating systems are untested: expect to extend [`builders/`](builders/README.md) and report what you learn.
 
 ## Hard rules
 

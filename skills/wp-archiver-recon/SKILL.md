@@ -24,6 +24,19 @@ grep -oE '<form[^>]*>|<iframe[^>]*>' home.html; grep -oE 'elementor-widget-[a-z-
 
 Also fetch the contact page and any page that looks interactive; note the form plugin, counters/analytics, comment forms, search, embeds, and hard-coded links to old domains (`grep -o 'http://old-domain'`). REST may be disabled or locked down: fall back to the sitemap and the nav links, and say that counts are partial.
 
+## Identify the page builder
+
+The builder decides which adapter applies (`wp-archiver`'s `builders/`). From the home page HTML and public theme/plugin files:
+
+| Builder | Signals | Version |
+|---|---|---|
+| Elementor | `<meta name="generator" content="Elementor x.y.z">`, `elementor-widget-*` classes, `/wp-content/plugins/elementor/` | the generator meta |
+| Divi (a **theme**: plugins may be empty) | `/wp-content/themes/Divi/` in asset URLs, `et_pb_*` and `et-boc` classes, Theme Builder regions `..._tb_header` / `..._tb_footer`; the generator meta names only WordPress | `curl -s $B/wp-content/themes/Divi/style.css` and read its `Version:` line (4.x proven; 5 untested) |
+| Block theme / plain | `wp-block-*` classes, no builder folder | n/a: no adapter needed |
+| Anything else (Beaver, WPBakery, Bricks, Oxygen) | its folder under `/wp-content/plugins` or `/themes` | no adapter yet: say so |
+
+Also note, because they decide work later: viewport-sized sections (`min-height: 90vh`, hero sliders) mean screenshots need the viewport-preserving capture (VIS-8); a premium builder or theme (Elegant Themes, etc.) means licence-bound code that cannot be re-downloaded (ARC-3); count `et_pb_contact_form` and form plugins as dynamic features to replace.
+
 ## Classify
 
 - **Candidate:** no logins, shop, member areas or site search; at most forms (drop or replace with a notice) and trackers (drop).

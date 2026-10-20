@@ -22,6 +22,7 @@ before reuse; the full list is [`site-config.md`](site-config.md). Gotcha IDs po
 | prune | `check.sh` | `bash scripts/check.sh <label> [base=baseline]` | snapshot + shots + both diffs + tag-line summary of removed assets | no | VIS-2, PRN-4 |
 | prune | `archive-form-notice.php.example` | copy to `archive-form-notice.php`, then `docker compose --profile tools run --rm wpcli wp eval-file archive-form-notice.php` | builder data of the form pages → notice widget (idempotent) | **yes** (post IDs, wording, widget types) | PRN-1 |
 | prune | `prune.sh` | `bash scripts/prune.sh` | applies the proven prune to a fresh restore | **yes** (ships as a template: write it from your batches) | PRN-2 |
+| scrub | `inventory.sh` / `inventory.sql` | `bash scripts/inventory.sh` | read-only DB inventory (sizes, post types, meta, option families, masked credential-looking options, users, taxonomies) -> stdout | no | DB-2, DB-4 |
 | scrub | `scrub.sh` / `scrub.sql` | `bash scripts/scrub.sh [--seed]` | backup → `scrub.sql` → OPTIMIZE → (seed dump) → WP boot → local admin | **yes** (`scrub.sql` PER-SITE sections ship as commented examples) | DB-1..7, ENV-10 |
 | export | `export.py` | `python scripts/export.py [--out DIR] [--origin URL]` | local WP → `site/` (+ `overlay/`) | `.env`: `FINAL_URL`; `HEAD_STRIP`, `SKIP` in the file | EXP-1..3,7,9 |
 | export | `export-extra-urls.txt` | (read by `export.py`) | runtime-only asset paths | **yes** (Elementor: start from `builders/elementor/export-extra-urls.txt`) | EXP-1 |
